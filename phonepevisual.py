@@ -244,19 +244,7 @@ with tabs[1]:
                 displaycol3details(2)
     with tabs[3]:
         st.header('Here are the valuable insights based on the detils of the Transaction and User details')
-        # col1, col2, col3 = st.columns(3)
-        # with col1:
-        #     type=st.selectbox('Select Typr',('Transaction','User'))
-        #     if type=='Transaction':
-        #         transaction= st.selectbox('Select Transaction type',
-        #                                     ('Recharge & bill payments', 'Peer-to-peer payments',
-        #                                      'Merchant payments', 'Financial Services', 'Others'))
-
-        # with col2:
-        #     year = st.selectbox('Select Year', ('2018', '2019', '2020', '2021', '2022','2023'))
-        # with col3:
-        #     quater = st.select_slider('Select Quarter', ('1', '2', '3', '4'))
-        selectquerybox=st.selectbox('Select the insights',('1.District wise representation of the usage','2.Brand wise hierarchy in PhonePe Usage','3.Which type of transaction has highest usage','4.State VS Transaction type visualization based on Transaction Amount','5.City wise hierarchy of highest transaction','6.What is the average transaction in each State in the selected quater','7 What is the trend of transaction in the particular year','8.What is the trend of the registered Users in the selected year','9.Top states liking the selected Type of Transaction in the selected Quater','10.Total App opening in the selected year and quater'))
+        selectquerybox=st.selectbox('Select the insights',('1.District wise representation of the usage','2.Brand wise hierarchy in PhonePe Usage','3.Which type of transaction has highest usage','4.State VS Transaction type visualization based on Transaction Amount','5.City wise hierarchy of highest transaction','6.What is the average transaction in each State in the selected quater','7 What is the trend of transaction in the particular year','8.What is the trend of the registered Users in the selected year','9.Top states distribution of the selected Type of Transaction in the selected Quater','10.Total App opening in the selected year and quater','11.What is the trend of transaction in every State','12.What is the trend of User Registration in every State','13.District wise distribution of transaction count','14.District wise distribution of registered users'))
         if selectquerybox=='1.District wise representation of the usage':
             col1,col2=st.columns(2)
             with col1:
@@ -357,7 +345,7 @@ with tabs[1]:
             fig.update_layout(height=780)
             fig.update_layout(width=780)
             st.plotly_chart(fig,use_container_width=True)
-        if selectquerybox=='9.Top states liking the selected Type of Transaction in the selected Quater':
+        if selectquerybox=='9.Top states distribution of the selected Type of Transaction in the selected Quater':
             col1, col2, col3 = st.columns(3)
             with col1:
                 year = st.selectbox('Select Year', ('2018', '2019', '2020', '2021', '2022','2023'))
@@ -382,6 +370,88 @@ with tabs[1]:
             out=mycursor.fetchall()
             details=pd.DataFrame(out,columns=['State','Appopens','Brand_Usage','Registered_users'])
             fig = px.bar(details, x="Appopens", y="State", orientation='h',color='Brand_Usage',color_continuous_scale='Reds')
+            fig.update_layout(height=780)
+            fig.update_layout(width=800)
+            st.plotly_chart(fig,use_container_width=True)
+        if selectquerybox=='11.What is the trend of transaction in every State':
+            col1,col2=st.columns(2)
+            with col1:
+                year = st.selectbox('Select Year', ('2018', '2019', '2020', '2021', '2022','2023'))
+            with col2:
+                mycursor.execute("Select DISTINCT State from Aggregate_Transaction_Details")
+                out=mycursor.fetchall()
+                s=pd.DataFrame(out)
+                l=[]
+                for x in s[0]:
+                    l.append(x)
+                state=st.selectbox('Select the State',l)
+            mycursor.execute(f"SELECT Quater, Transaction_type,Transaction_count from project2.Aggregate_Transaction_Details where Year='{year}' and State='{state}'")
+            out=mycursor.fetchall()
+            details=pd.DataFrame(out,columns=['Quater','Transaction_type','Transaction_count'])
+            fig = px.line(details, x="Quater", y="Transaction_count", color="Transaction_type",color_discrete_sequence=['#ffdd1a','#00ffff','#ff6b6b','#ff33cc','#33ff33'])
+            fig.update_traces(textposition="bottom right")
+            fig.update_layout(height=780)
+            fig.update_layout(width=800)
+            st.plotly_chart(fig,use_container_width=True)
+        if selectquerybox=='12.What is the trend of User Registration in every State':
+            col1,col2=st.columns(2)
+            with col1:
+                year = st.selectbox('Select Year', ('2018', '2019', '2020', '2021', '2022','2023'))
+            with col2:
+                mycursor.execute("Select DISTINCT State from Aggregate_Transaction_Details")
+                out=mycursor.fetchall()
+                s=pd.DataFrame(out)
+                l=[]
+                for x in s[0]:
+                    l.append(x)
+                state=st.selectbox('Select the State',l)
+            mycursor.execute(f"select quater, Registered_users FROM project2.aggregate_user_details WHERE year='{year}' and State='{state}'")
+            out=mycursor.fetchall()
+            details=pd.DataFrame(out,columns=['Quater','Registered_users'])
+            fig = px.line(details, x="Quater", y="Registered_users")
+            fig.update_traces(textposition="bottom right")
+            fig.update_layout(height=780)
+            fig.update_layout(width=780)
+            st.plotly_chart(fig,use_container_width=True)
+        if selectquerybox=='13.District wise distribution of transaction count':
+            col1, col2, col3 = st.columns(3)
+            with col1:
+                year = st.selectbox('Select Year', ('2018', '2019', '2020', '2021', '2022','2023'))
+            with col2:
+                quater = st.select_slider('Select Quarter', ('1', '2', '3', '4'))
+            with col3:
+                mycursor.execute("Select DISTINCT State from Aggregate_Transaction_Details")
+                out=mycursor.fetchall()
+                s=pd.DataFrame(out)
+                l=[]
+                for x in s[0]:
+                    l.append(x)
+                state=st.selectbox('Select the State',l)
+            mycursor.execute(f"select District,Transaction_count FROM project2.map_transaction_details WHERE year='{year}' and quater='{quater}' and State='{state}'")
+            out=mycursor.fetchall()
+            details=pd.DataFrame(out,columns=['District','Transaction_count'])
+            fig = px.bar(details, x="District", y="Transaction_count", orientation='v',color='Transaction_count',color_continuous_scale='portland')
+            fig.update_layout(height=780)
+            fig.update_layout(width=800)
+            st.plotly_chart(fig,use_container_width=True)
+        if selectquerybox=='14.District wise distribution of registered users':
+            col1, col2, col3 = st.columns(3)
+            with col1:
+                year = st.selectbox('Select Year', ('2018', '2019', '2020', '2021', '2022','2023'))
+            with col2:
+                quater = st.select_slider('Select Quarter', ('1', '2', '3', '4'))
+            with col3:
+                mycursor.execute("Select DISTINCT State from Map_user_details")
+                out=mycursor.fetchall()
+                s=pd.DataFrame(out)
+                l=[]
+                for x in s[0]:
+                    l.append(x)
+                state=st.selectbox('Select the State',l)
+            mycursor.execute(f"select District,Registered_Users FROM project2.map_user_details WHERE year='{year}' and quater='{quater}' and State='{state}'")
+            out=mycursor.fetchall()
+            details=pd.DataFrame(out,columns=['District','Registered_Users'])
+            fig = px.bar(details, x="District", y="Registered_Users", orientation='v',color='Registered_Users',color_continuous_scale='temps')
             fig.update_layout(height=780)
             fig.update_layout(width=800)
             st.plotly_chart(fig,use_container_width=True)
